@@ -63,7 +63,13 @@ export class Utils {
       return true;
     });
   };
-
+  public static filterMessagesDate = (data: Message[], startTime: string, endTime: string) => {
+    const filteredData = data.filter((a) => {
+        return (new Date(a.created_time) >= new Date(startTime) && new Date(a.created_time) <= new Date(endTime))
+    });
+    console.log("Utils filterMessagesDate ---", filteredData.length);
+    return Array.from(new Set(filteredData));
+};
   public static extractAgentIds = (messages: Message[]): string[] => {
     const actorIds = messages
       .filter((message) => message.actor_type === ActorType.Agent)

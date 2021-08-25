@@ -333,6 +333,8 @@ export default class Freshchat {
     baseUrl: string,
     accountId: string,
     conversationId: string,
+    startTime?: string,
+    endTime?: string,
     options?: GetConversationMessagesOptions,
     filterMessagesOptions?: FilterMessagesOptions,
   ): Promise<string> {
@@ -341,8 +343,14 @@ export default class Freshchat {
       const messages = await this.getConversationMessages(conversationId, options);
 
       // Step 2: Filter messages
-      const filteredMessages = Utils.filterMessages(messages, filterMessagesOptions);
-
+      const filterData = Utils.filterMessages(messages, filterMessagesOptions);
+      let filteredMessages: any;
+      if (startTime && endTime) {
+        filteredMessages = Utils.filterMessagesDate(filterData, startTime, endTime);
+      } else {
+        filteredMessages == filterData;
+      }
+      
       if (!filteredMessages.length) {
         throw 'Empty conversation';
       }
