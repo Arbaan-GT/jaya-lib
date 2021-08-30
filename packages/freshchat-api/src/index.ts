@@ -1,34 +1,34 @@
-import axios, { AxiosPromise } from 'axios';
+import axios, { AxiosPromise } from "axios";
 import {
   Message,
   GetMessagesResponse,
   GetConversationMessagesOptions,
   FilterMessagesOptions,
-} from './interfaces/Message';
-import { Conversation, ConversationStatus } from './interfaces/Conversation';
-import { DashboardHistorical } from './interfaces/DashboardHistorical';
-import { ReplyPart } from './interfaces/ReplyPart';
-import { User } from './interfaces/User';
-import { Agent } from './interfaces/Agent';
-import { Utils } from './Utils';
-import { isUsernameGenerated } from '@freshworks-jaya/utilities';
-import { ReportType } from './interfaces/Report';
-import { MessagePart } from './interfaces/MessagePart';
+} from "./interfaces/Message";
+import { Conversation, ConversationStatus } from "./interfaces/Conversation";
+import { DashboardHistorical } from "./interfaces/DashboardHistorical";
+import { ReplyPart } from "./interfaces/ReplyPart";
+import { User } from "./interfaces/User";
+import { Agent } from "./interfaces/Agent";
+import { Utils } from "./Utils";
+import { isUsernameGenerated } from "@freshworks-jaya/utilities";
+import { ReportType } from "./interfaces/Report";
+import { MessagePart } from "./interfaces/MessagePart";
 
-export * from './interfaces/Conversation';
-export * from './interfaces/Message';
-export * from './interfaces/DashboardHistorical';
-export * from './interfaces/User';
-export * from './interfaces/Report';
+export * from "./interfaces/Conversation";
+export * from "./interfaces/Message";
+export * from "./interfaces/DashboardHistorical";
+export * from "./interfaces/User";
+export * from "./interfaces/Report";
 
 export default class Freshchat {
   private get headers(): {
     Authorization: string;
-    'Content-Type': string;
+    "Content-Type": string;
   } {
     return {
       Authorization: `Bearer ${this.apiToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
   }
 
@@ -37,7 +37,10 @@ export default class Freshchat {
   /**
    * Calls Freshchat Dashboard Historical API to fetch average wait time.
    */
-  getAverageWaitTimeGivenGroupId(groupId: string, durationInHours: number): Promise<number> {
+  getAverageWaitTimeGivenGroupId(
+    groupId: string,
+    durationInHours: number
+  ): Promise<number> {
     const dashboardMetricsApiUrl = `${this.apiUrl}/metrics/historical`;
 
     const today = new Date();
@@ -48,10 +51,10 @@ export default class Freshchat {
       .get(dashboardMetricsApiUrl, {
         headers: this.headers,
         params: {
-          aggregator: 'avg',
+          aggregator: "avg",
           end: today.toISOString(),
-          group_by: 'group',
-          metric: 'conversation_metrics.wait_time',
+          group_by: "group",
+          metric: "conversation_metrics.wait_time",
           start: pastDate.toISOString(),
         },
       })
@@ -71,7 +74,10 @@ export default class Freshchat {
   /**
    * Calls Freshchat Dashboard Historical API to fetch unassigned count.
    */
-  getUnassignedCountGivenGroupId(groupId: string, unassignedDuration: number): Promise<number> {
+  getUnassignedCountGivenGroupId(
+    groupId: string,
+    unassignedDuration: number
+  ): Promise<number> {
     const dashboardMetricsApiUrl = `${this.apiUrl}/metrics/historical`;
 
     return axios
@@ -79,8 +85,8 @@ export default class Freshchat {
         headers: this.headers,
         params: {
           end: new Date().toISOString(),
-          group_by: 'group',
-          metric: 'conversation_metrics.created_x_mins_ago_and_unassigned',
+          group_by: "group",
+          metric: "conversation_metrics.created_x_mins_ago_and_unassigned",
           start: new Date().toISOString(),
           x_time: unassignedDuration,
         },
@@ -104,8 +110,8 @@ export default class Freshchat {
   conversationAssign(
     conversationId: string,
     resourceId: string,
-    assignTo: 'agent' | 'group',
-    status: ConversationStatus,
+    assignTo: "agent" | "group",
+    status: ConversationStatus
   ): AxiosPromise<Conversation> {
     const conversationAssignApiUrl = `${this.apiUrl}/conversations/${conversationId}`;
     const data: {
@@ -116,10 +122,10 @@ export default class Freshchat {
       status,
     };
 
-    if (assignTo === 'agent') {
+    if (assignTo === "agent") {
       data.assigned_agent_id = resourceId;
     }
-    if (assignTo === 'group') {
+    if (assignTo === "group") {
       data.assigned_group_id = resourceId;
     }
 
@@ -134,10 +140,10 @@ export default class Freshchat {
   postMessage(
     conversationId: string,
     message: string,
-    messageType: 'normal' | 'private',
-    actorType?: 'agent' | 'bot',
+    messageType: "normal" | "private",
+    actorType?: "agent" | "bot",
     actorId?: string,
-    replyParts?: ReplyPart[],
+    replyParts?: ReplyPart[]
   ): AxiosPromise<Message> {
     const postMessageApiUrl = `${this.apiUrl}/conversations/${conversationId}/messages`;
 
@@ -145,7 +151,7 @@ export default class Freshchat {
       postMessageApiUrl,
       JSON.stringify({
         actor_id: actorId,
-        actor_type: actorType || 'bot',
+        actor_type: actorType || "bot",
         message_parts: [
           {
             text: {
@@ -156,17 +162,17 @@ export default class Freshchat {
         message_type: messageType,
         reply_parts: replyParts,
       }),
-      { headers: this.headers },
+      { headers: this.headers }
     );
   }
 
   sendReply(
     conversationId: string,
-    messageType: 'normal' | 'private',
-    actorType: 'agent' | 'bot',
+    messageType: "normal" | "private",
+    actorType: "agent" | "bot",
     messageParts: MessagePart[],
     replyParts?: ReplyPart[],
-    actorId?: string,
+    actorId?: string
   ): AxiosPromise<Message> {
     const postMessageApiUrl = `${this.apiUrl}/conversations/${conversationId}/messages`;
 
@@ -174,12 +180,12 @@ export default class Freshchat {
       postMessageApiUrl,
       JSON.stringify({
         actor_id: actorId,
-        actor_type: actorType || 'bot',
+        actor_type: actorType || "bot",
         message_parts: messageParts,
         message_type: messageType,
         reply_parts: replyParts,
       }),
-      { headers: this.headers },
+      { headers: this.headers }
     );
   }
 
@@ -187,20 +193,27 @@ export default class Freshchat {
   private async _getConversationMessagesByUrl(
     urlPath: string,
     result: Message[],
-    options?: GetConversationMessagesOptions,
+    options?: GetConversationMessagesOptions
   ): Promise<Message[]> {
     // this.apiUrl for US is https://api.freshchat.com/v2
     // We want to truncate the last 3 characters so that we are left with https://api.freshchat.com
     const apiUrlDomain = this.apiUrl.slice(0, -3);
 
     try {
-      const { data }: { data: GetMessagesResponse } = await axios.get(`${apiUrlDomain}${urlPath}`, {
-        headers: this.headers,
-      });
+      const { data }: { data: GetMessagesResponse } = await axios.get(
+        `${apiUrlDomain}${urlPath}`,
+        {
+          headers: this.headers,
+        }
+      );
 
       let isStopFurtherFetch = false;
 
-      for (let i = 0, messagesLen = data.messages.length; i < messagesLen; i++) {
+      for (
+        let i = 0, messagesLen = data.messages.length;
+        i < messagesLen;
+        i++
+      ) {
         const currentMessage = data.messages[i];
 
         if (
@@ -209,7 +222,9 @@ export default class Freshchat {
             result.length &&
             currentMessage.meta_data &&
             currentMessage.meta_data.isResolved) ||
-          (options && options.messagesLimit && result.length >= options.messagesLimit)
+          (options &&
+            options.messagesLimit &&
+            result.length >= options.messagesLimit)
         ) {
           isStopFurtherFetch = true;
           break;
@@ -219,7 +234,11 @@ export default class Freshchat {
       }
 
       if (data.link && !isStopFurtherFetch) {
-        return this._getConversationMessagesByUrl(data.link.href, result, options);
+        return this._getConversationMessagesByUrl(
+          data.link.href,
+          result,
+          options
+        );
       } else {
         return Promise.resolve(result);
       }
@@ -227,7 +246,7 @@ export default class Freshchat {
       if (err.response && err.response.data) {
         return Promise.reject(err.response.data);
       } else {
-        return Promise.reject('Error fetching conversation');
+        return Promise.reject("Error fetching conversation");
       }
     }
   }
@@ -235,11 +254,14 @@ export default class Freshchat {
   /**
    * Calls Freshchat conversation api to fetch all messages in a particular conversation.
    */
-  getConversationMessages(conversationId: string, options?: GetConversationMessagesOptions): Promise<Message[]> {
+  getConversationMessages(
+    conversationId: string,
+    options?: GetConversationMessagesOptions
+  ): Promise<Message[]> {
     return this._getConversationMessagesByUrl(
       `/v2/conversations/${conversationId}/messages?page=1&items_per_page=50`,
       [] as Message[],
-      options,
+      options
     );
   }
 
@@ -253,7 +275,7 @@ export default class Freshchat {
    */
   conversationStatusUpdate(
     conversationId: string,
-    status: 'assigned' | 'new' | 'resolved',
+    status: "assigned" | "new" | "resolved"
   ): AxiosPromise<Conversation> {
     const conversationStatusUpdateApiUrl = `${this.apiUrl}/conversations/${conversationId}`;
 
@@ -262,14 +284,18 @@ export default class Freshchat {
       JSON.stringify({
         status,
       }),
-      { headers: this.headers },
+      { headers: this.headers }
     );
   }
 
   /**
    * Send a quickreply message
    */
-  sendQuickreply(conversationId: string, message: string, responses: string[]): AxiosPromise<Message> {
+  sendQuickreply(
+    conversationId: string,
+    message: string,
+    responses: string[]
+  ): AxiosPromise<Message> {
     const quickReplyParts = responses.map((response) => {
       return {
         quick_reply_button: {
@@ -278,7 +304,7 @@ export default class Freshchat {
       };
     });
 
-    return this.postMessage(conversationId, message, 'normal', 'bot', '', [
+    return this.postMessage(conversationId, message, "normal", "bot", "", [
       {
         collection: {
           sub_parts: quickReplyParts,
@@ -290,8 +316,18 @@ export default class Freshchat {
   /**
    * Send Normal Reply.
    */
-  sendNormalReplyText(conversationId: string, message: string, agentId?: string): AxiosPromise<Message> {
-    return this.postMessage(conversationId, message, 'normal', agentId ? 'agent' : 'bot', agentId);
+  sendNormalReplyText(
+    conversationId: string,
+    message: string,
+    agentId?: string
+  ): AxiosPromise<Message> {
+    return this.postMessage(
+      conversationId,
+      message,
+      "normal",
+      agentId ? "agent" : "bot",
+      agentId
+    );
   }
 
   /** Update User API */
@@ -306,23 +342,29 @@ export default class Freshchat {
         name: string;
         value: string;
       }[];
-    },
-  ): AxiosPromise<''> {
+    }
+  ): AxiosPromise<""> {
     const updateUserApiUrl = `${this.apiUrl}/users/${userId}`;
 
-    return axios.put(updateUserApiUrl, JSON.stringify(properties), { headers: this.headers });
+    return axios.put(updateUserApiUrl, JSON.stringify(properties), {
+      headers: this.headers,
+    });
   }
 
   getUserById(userId: string): Promise<User> {
     const getUserApiUrl = `${this.apiUrl}/users/${userId}`;
 
-    return axios.get(getUserApiUrl, { headers: this.headers }).then((response) => response.data);
+    return axios
+      .get(getUserApiUrl, { headers: this.headers })
+      .then((response) => response.data);
   }
 
   getAgentById(agentId: string): Promise<Agent> {
     const getAgentApiUrl = `${this.apiUrl}/agents/${agentId}`;
 
-    return axios.get(getAgentApiUrl, { headers: this.headers }).then((response) => response.data);
+    return axios
+      .get(getAgentApiUrl, { headers: this.headers })
+      .then((response) => response.data);
   }
 
   getAgentsById(agentIds: string[]): Promise<Agent[]> {
@@ -336,23 +378,30 @@ export default class Freshchat {
     startTime?: string,
     endTime?: string,
     options?: GetConversationMessagesOptions,
-    filterMessagesOptions?: FilterMessagesOptions,
+    filterMessagesOptions?: FilterMessagesOptions
   ): Promise<string> {
     try {
       // Step 1: Get conversation messages
-      const messages = await this.getConversationMessages(conversationId, options);
+      const messages = await this.getConversationMessages(
+        conversationId,
+        options
+      );
 
       // Step 2: Filter messages
       const filterData = Utils.filterMessages(messages, filterMessagesOptions);
       let filteredMessages: any;
       if (startTime && endTime) {
-        filteredMessages = Utils.filterMessagesDate(filterData, startTime, endTime);
+        filteredMessages = Utils.filterMessagesDate(
+          filterData,
+          startTime,
+          endTime
+        );
       } else {
         filteredMessages == filterData;
       }
-      
+
       if (!filteredMessages.length) {
-        throw 'Empty conversation';
+        throw "Empty conversation";
       }
 
       // Step 2: Extract list of agentIds
@@ -368,8 +417,8 @@ export default class Freshchat {
       let user: User | null = null;
       if (userId) {
         user = await this.getUserById(userId);
-        if (isUsernameGenerated(user.first_name || '')) {
-          user.first_name = '';
+        if (isUsernameGenerated(user.first_name || "")) {
+          user.first_name = "";
         }
       }
 
@@ -382,8 +431,73 @@ export default class Freshchat {
           filteredMessages,
           agents,
           user as User,
-          options,
-        ),
+          options
+        )
+      );
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
+  // Arbaan cutom method
+
+  async getConversationTranscriptwithDate(
+    baseUrl: string,
+    accountId: string,
+    conversationId: string,
+    messages: Message[],
+    startTime?: string,
+    endTime?: string,
+    options?: GetConversationMessagesOptions,
+    filterMessagesOptions?: FilterMessagesOptions
+  ): Promise<string> {
+    try {
+      // Step 1: Filter messages
+      const filterData = Utils.filterMessages(messages, filterMessagesOptions);
+      let filteredMessages: any;
+      if (startTime && endTime) {
+        filteredMessages = Utils.filterMessagesDate(
+          filterData,
+          startTime,
+          endTime
+        );
+      } else {
+        filteredMessages == filterData;
+      }
+
+      if (!filteredMessages.length) {
+        throw "Empty conversation";
+      }
+
+      // Step 2: Extract list of agentIds
+      const agentIds = Utils.extractAgentIds(filteredMessages);
+
+      // Step 3: Get agents by id
+      const agents = await this.getAgentsById(agentIds);
+
+      // Step 4: Extract userId
+      const userId = Utils.extractUserId(filteredMessages);
+
+      // Step 5: Get user by id
+      let user: User | null = null;
+      if (userId) {
+        user = await this.getUserById(userId);
+        if (isUsernameGenerated(user.first_name || "")) {
+          user.first_name = "";
+        }
+      }
+
+      // Step 6: Generate conversation html
+      return Promise.resolve(
+        Utils.generateConversationTranscript(
+          baseUrl,
+          accountId,
+          conversationId,
+          filteredMessages,
+          agents,
+          user as User,
+          options
+        )
       );
     } catch (err) {
       return Promise.reject(err);
@@ -394,7 +508,7 @@ export default class Freshchat {
     startTime: string,
     endTime: string,
     eventType: ReportType,
-    isExcludePii: boolean,
+    isExcludePii: boolean
   ): Promise<{
     id: string;
     link: {
@@ -410,11 +524,11 @@ export default class Freshchat {
         JSON.stringify({
           end: endTime,
           event: eventType,
-          format: 'csv',
+          format: "csv",
           should_exclude_pii: isExcludePii,
           start: startTime,
         }),
-        { headers: this.headers },
+        { headers: this.headers }
       )
       .then((response) => Promise.resolve(response.data));
   }
@@ -431,10 +545,12 @@ export default class Freshchat {
       status: string;
       to: string;
     }[];
-    status: 'COMPLETED' | string;
+    status: "COMPLETED" | string;
   }> {
     const rawReportsApiUrl = `${this.apiUrl}/reports/raw/${requestId}`;
 
-    return axios.get(rawReportsApiUrl, { headers: this.headers }).then((response) => response.data);
+    return axios
+      .get(rawReportsApiUrl, { headers: this.headers })
+      .then((response) => response.data);
   }
 }
